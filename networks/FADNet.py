@@ -105,9 +105,9 @@ class FADNet(nn.Module):
         if self.attention:
             attention_map = self.SA(inputs_net2)
 
-            dispnetres_flows = self.dispnetres(inputs_net2 * attention_map, dispnetc_flows)
+            dispnetres_flows = self.dispnetres([inputs_net2 * attention_map, dispnetc_flows])
         else:
-            dispnetres_flows = self.dispnetres(inputs_net2, dispnetc_flows)
+            dispnetres_flows = self.dispnetres([inputs_net2, dispnetc_flows])
         # dispnetres
 
         index = 0

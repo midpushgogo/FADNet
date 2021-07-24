@@ -38,7 +38,6 @@ class SceneFlowDataset(Dataset):
 
     def __len__(self):
         return len(self.imgPairs)
-
     def __getitem__(self, idx):
 
         img_names = self.imgPairs[idx].rstrip().split()
