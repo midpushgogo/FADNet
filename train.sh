@@ -9,14 +9,14 @@ logf=logs/${net}-sceneflow.log
 lr=4e-3
 devices=0,1
 dataset=sceneflow
-datapath=/spyder/sceneflow
+datapath=data
 trainlist=lists/SceneFlow.list
 vallist=lists/FlyingThings3D_release_TEST.list
 startR=0
 startE=0
 batchSize=4
 maxdisp=-1
-model=none
+model=None 
 
 python -W ignore main.py --cuda --net $net --loss $loss --lr $lr \
                --outf $outf_model --logFile $logf \

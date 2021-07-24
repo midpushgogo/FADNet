@@ -47,7 +47,7 @@ class FADNet(nn.Module):
         self.lastRelu = lastRelu
         self.maxdisp = maxdisp
         self.resBlock = resBlock
-
+        self.combine=combine
         # First Block (DispNetC)
         self.dispnetc = DispNetC(self.batchNorm, maxdisp=self.maxdisp, input_channel=input_channel,
                                  combine=self.combine)
@@ -58,7 +58,6 @@ class FADNet(nn.Module):
         self.attention = attention
         if self.attention:
             self.SA = SA_Module(input_nc=11)
-        self.combine = combine
 
         # Second Block (DispNetRes), input is 11 channels(img0, img1, img1->img0, flow, diff-mag)
         in_planes = 3 * 3 + 1 + 1
