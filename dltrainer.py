@@ -19,7 +19,7 @@ import skimage
 from tensorboardX import SummaryWriter
 
 class DisparityTrainer(object):
-    def __init__(self, net_name, lr, devices, dataset, trainlist, vallist, datapath, batch_size, maxdisp, pretrain=None):
+    def __init__(self, net_name, lr, devices, dataset, trainlist, vallist, datapath, batch_size, maxdisp, pretrain=None,attention=False,combine=False):
         super(DisparityTrainer, self).__init__()
         self.net_name = net_name
         self.lr = lr
@@ -35,7 +35,8 @@ class DisparityTrainer(object):
         self.batch_size = batch_size
         self.pretrain = pretrain 
         self.maxdisp = maxdisp
-
+        self.attention=attention
+        self.combine=combine
         self.criterion = None
         self.epe = EPE
         self.initialize()
@@ -68,7 +69,7 @@ class DisparityTrainer(object):
         if self.net_name == "psmnet" or self.net_name == "ganet":
             self.net = build_net(self.net_name)(self.maxdisp)
         else:
-            self.net = build_net(self.net_name)(batchNorm=False, lastRelu=True, maxdisp=self.maxdisp)
+            self.net = build_net(self.net_name)(batchNorm=False, lastRelu=True, maxdisp=self.maxdisp,attention=self.attention,combine=self.combine)
 
         self.is_pretrain = False
 

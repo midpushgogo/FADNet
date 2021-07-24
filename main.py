@@ -36,7 +36,7 @@ def main(opt):
 
     #high_res_EPE = multiscaleloss(scales=1, downscale=1, weights=(1), loss='L1', sparse=False)
     # initialize a trainer
-    trainer = DisparityTrainer(opt.net, opt.lr, opt.devices, opt.dataset, opt.trainlist, opt.vallist, opt.datapath, opt.batch_size, opt.maxdisp, opt.model)
+    trainer = DisparityTrainer(opt.net, opt.lr, opt.devices, opt.dataset, opt.trainlist, opt.vallist, opt.datapath, opt.batch_size, opt.maxdisp, opt.model,opt.attention,opt.combine)
 
     # validate the pretrained model on test data
     best_EPE = -1
@@ -98,7 +98,9 @@ if __name__ == '__main__':
     parser.add_argument('--trainlist', type=str, help='provide the train file (with file list)', default='FlyingThings3D_release_TRAIN.list')
     parser.add_argument('--vallist', type=str, help='provide the val file (with file list)', default='FlyingThings3D_release_TEST.list')
     parser.add_argument('--augment', type=int, help='if augment data in training', default=0)
-    
+    parser.add_argument('--attention', action='store_true')
+    parser.add_argument('--combine', action='store_true')
+
     opt = parser.parse_args()
     try:
         os.makedirs(opt.outf)

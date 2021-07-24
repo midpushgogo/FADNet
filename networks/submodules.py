@@ -100,6 +100,27 @@ def build_corr(img_left, img_right, max_disp=40, zero_volume=None):
     volume = volume.contiguous()
     return volume
 
+def build_comb(left_feature, right_feature, max_disp=40, zero_volume=None, comb=None):
+    b, c, h, w = left_feature.shape
+    cost_volume_correlation = left_feature.new_zeros(b, max_disp, h, w)
+    cost_volume_con = left_feature.new_zeros(b, 2 * c, max_disp, h, w)
+    for i in range(max_disp):
+        if i > 0:
+            cost_volume_correlation[:, i, :, i:] = (left_feature[:, :, :, i:] *
+                                                    right_feature[:, :, :, :-i]).mean(dim=1)
+            cost_volume_con[:, :, i, :, i:] = torch.cat((left_feature[:, :, :, i:], right_feature[:, :, :, :-i]),
+                                                        dim=1)
+        else:
+            cost_volume_correlation[:, i, :, :] = (left_feature * right_feature).mean(dim=1)
+            cost_volume_con[:, :, i, :, :] = torch.cat((left_feature, right_feature), dim=1)
+
+    # cost volume squeezement
+    cost_volume_concat = comb(cost_volume_con).squeeze(dim=1)  # N C D H W -> N D H W
+
+    cost_volume = cost_volume_concat + cost_volume_correlation  # N D H W
+
+    cost_volume = cost_volume.contiguous()
+    return cost_volume
 def deconv(in_planes, out_planes):
     return nn.Sequential(
         nn.ConvTranspose2d(in_planes, out_planes, kernel_size=4, stride=2, padding=1, bias=False),
