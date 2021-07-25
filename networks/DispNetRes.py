@@ -14,7 +14,7 @@ from networks.submodules import *
 
 class DispNetRes(nn.Module):
 
-    def __init__(self, in_planes, batchNorm=True, lastRelu=False, maxdisp=-1, input_channel=3):
+    def __init__(self, in_planes, batchNorm=True, lastRelu=False, maxdisp=-1, input_channel=3,attention=False):
         super(DispNetRes, self).__init__()
         
         self.input_channel = input_channel
@@ -22,6 +22,16 @@ class DispNetRes(nn.Module):
         self.lastRelu = lastRelu 
         self.maxdisp = maxdisp
         self.res_scale = 7  # number of residuals
+        self.attention=attention
+        if self.attention:
+            self.SA0 = SA_Module(input_nc=11)
+            self.SA1 = SA_Module(input_nc=11)
+            self.SA2 = SA_Module(input_nc=11)
+            self.SA3 = SA_Module(input_nc=11)
+            self.SA4 = SA_Module(input_nc=11)
+            self.SA5 = SA_Module(input_nc=11)
+            self.SA6 = SA_Module(input_nc=11)
+
 
         # improved with shrink res-block layers
         self.conv1   = conv(in_planes, 64, 7, 2, batchNorm=self.batchNorm)
@@ -99,7 +109,7 @@ class DispNetRes(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
         
-    def forward(self, inputs, get_feature=False):
+    def forward(self, inputs, left,right):
 
         input = inputs[0]
         base_flow = inputs[1]
@@ -115,7 +125,19 @@ class DispNetRes(nn.Module):
         conv6a = self.conv6(conv5b)
         conv6b = self.conv6_1(conv6a)
 
-        pr6_res = self.pred_res6(conv6b)
+        if self.attention:
+            left_small=F.interpolate(left, size=(base_flow[6].size()[-2],base_flow[6].size()[-1]))
+            right_small = F.interpolate(right, size=(base_flow[6].size()[-2], base_flow[6].size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -base_flow[6])
+
+            error = left_small - r_right
+            attention_map=self.SA6(left_small,right_small,error,base_flow[6])
+
+
+            pr6_res = self.pred_res6(conv6b*attention_map)
+        else:
+            pr6_res = self.pred_res6(conv6b)
         pr6 = pr6_res + base_flow[6]
 
         upconv5 = self.upconv5(conv6b)
@@ -123,7 +145,21 @@ class DispNetRes(nn.Module):
         concat5 = torch.cat((upconv5, upflow6, conv5b), 1)
         iconv5 = self.iconv5(concat5)
 
-        pr5_res = self.pred_res5(iconv5)
+        if self.attention:
+            left_small=F.interpolate(left, size=(base_flow[5].size()[-2],base_flow[5].size()[-1]))
+            right_small = F.interpolate(right, size=(base_flow[5].size()[-2], base_flow[5].size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -base_flow[5])
+
+            error = left_small - r_right
+            attention_map=self.SA5(left_small,right_small,error,base_flow[5])
+
+
+            pr5_res = self.pred_res5(iconv5*attention_map)
+        else:
+            pr5_res = self.pred_res5(iconv5)
+
+
         pr5 = pr5_res + base_flow[5]
 
         upconv4 = self.upconv4(iconv5)
@@ -131,7 +167,20 @@ class DispNetRes(nn.Module):
         concat4 = torch.cat((upconv4, upflow5, conv4b), 1)
         iconv4 = self.iconv4(concat4)
 
-        pr4_res = self.pred_res4(iconv4)
+        if self.attention:
+            left_small=F.interpolate(left, size=(base_flow[4].size()[-2],base_flow[4].size()[-1]))
+            right_small = F.interpolate(right, size=(base_flow[4].size()[-2], base_flow[4].size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -base_flow[4])
+
+            error = left_small - r_right
+            attention_map=self.SA4(left_small,right_small,error,base_flow[4])
+
+
+            pr4_res = self.pred_res4(iconv4*attention_map)
+        else:
+            pr4_res = self.pred_res4(iconv4)
+
         pr4 = pr4_res + base_flow[4]
         
         upconv3 = self.upconv3(iconv4)
@@ -139,7 +188,19 @@ class DispNetRes(nn.Module):
         concat3 = torch.cat((upconv3, upflow4, conv3b), 1)
         iconv3 = self.iconv3(concat3)
 
-        pr3_res = self.pred_res3(iconv3)
+        if self.attention:
+            left_small=F.interpolate(left, size=(base_flow[3].size()[-2],base_flow[3].size()[-1]))
+            right_small = F.interpolate(right, size=(base_flow[3].size()[-2], base_flow[3].size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -base_flow[3])
+
+            error = left_small - r_right
+            attention_map=self.SA3(left_small,right_small,error,base_flow[3])
+
+
+            pr3_res = self.pred_res3(iconv3*attention_map)
+        else:
+            pr3_res = self.pred_res3(iconv3)
         pr3 = pr3_res + base_flow[3]
 
         upconv2 = self.upconv2(iconv3)
@@ -147,7 +208,19 @@ class DispNetRes(nn.Module):
         concat2 = torch.cat((upconv2, upflow3, conv2), 1)
         iconv2 = self.iconv2(concat2)
 
-        pr2_res = self.pred_res2(iconv2)
+        if self.attention:
+            left_small=F.interpolate(left, size=(base_flow[2].size()[-2],base_flow[2].size()[-1]))
+            right_small = F.interpolate(right, size=(base_flow[2].size()[-2], base_flow[2].size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -base_flow[2])
+
+            error = left_small - r_right
+            attention_map=self.SA2(left_small,right_small,error,base_flow[2])
+
+
+            pr2_res = self.pred_res2(iconv2*attention_map)
+        else:
+            pr2_res = self.pred_res2(iconv2)
         pr2 = pr2_res + base_flow[2]
 
         upconv1 = self.upconv1(iconv2)
@@ -155,7 +228,19 @@ class DispNetRes(nn.Module):
         concat1 = torch.cat((upconv1, upflow2, conv1), 1)
         iconv1 = self.iconv1(concat1)
 
-        pr1_res = self.pred_res1(iconv1)
+        if self.attention:
+            left_small=F.interpolate(left, size=(base_flow[1].size()[-2],base_flow[1].size()[-1]))
+            right_small = F.interpolate(right, size=(base_flow[1].size()[-2], base_flow[1].size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -base_flow[1])
+
+            error = left_small - r_right
+            attention_map=self.SA1(left_small,right_small,error,base_flow[1])
+
+
+            pr1_res = self.pred_res1(iconv1*attention_map)
+        else:
+            pr1_res = self.pred_res1(iconv1)
         pr1 = pr1_res + base_flow[1]
 
         upconv0 = self.upconv0(iconv1)
@@ -165,7 +250,18 @@ class DispNetRes(nn.Module):
 
         # predict flow residual
         if self.maxdisp == -1:
-            pr0_res = self.pred_res0(iconv0)
+            if self.attention:
+                left_small = F.interpolate(left, size=(base_flow[0].size()[-2], base_flow[0].size()[-1]))
+                right_small = F.interpolate(right, size=(base_flow[0].size()[-2], base_flow[0].size()[-1]))
+
+                r_right = warp_right_to_left(right_small, -base_flow[0])
+
+                error = left_small - r_right
+                attention_map = self.SA0(left_small, right_small, error, base_flow[0])
+
+                pr0_res = self.pred_res0(iconv0 * attention_map)
+            else:
+                pr0_res = self.pred_res0(iconv0)
             pr0 = pr0_res + base_flow[0]
 
             if self.lastRelu:
@@ -181,10 +277,9 @@ class DispNetRes(nn.Module):
             pr0_res = F.softmax(pr0_res, dim=1)
             pr0_res = disparity_regression(pr0_res, self.maxdisp)
 
-        if get_feature:
-            return pr0, pr1, pr2, pr3, pr4, pr5, pr6, iconv0
-        else:
-            return pr0, pr1, pr2, pr3, pr4, pr5, pr6
+
+
+        return pr0, pr1, pr2, pr3, pr4, pr5, pr6
 
     def weight_parameters(self):
         return [param for name, param in self.named_parameters() if 'weight' in name]
@@ -192,3 +287,27 @@ class DispNetRes(nn.Module):
     def bias_parameters(self):
         return [param for name, param in self.named_parameters() if 'bias' in name]
 
+
+
+class SA_Module(nn.Module):
+    """
+    Note: simple but effective spatial attention module.
+    """
+
+    def __init__(self, input_nc, output_nc=1, ndf=16):
+        super(SA_Module, self).__init__()
+        self.attention_value = nn.Sequential(
+            nn.Conv2d(input_nc, ndf, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(ndf),
+            nn.ReLU(True),
+            nn.Conv2d(ndf, ndf, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(ndf),
+            nn.ReLU(True),
+            nn.Conv2d(ndf, output_nc, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        attention_value = self.attention_value(x)
+
+        return attention_value

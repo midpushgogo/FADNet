@@ -315,6 +315,7 @@ def channel_normalize(x):
     return x / (torch.norm(x, 2, dim=1, keepdim=True) + 1e-8)
 
 def channel_length(x):
+    # L2 error
     return torch.sqrt(torch.sum(torch.pow(x, 2), dim=1, keepdim=True))
 
 def warp_right_to_left(x, disp, warp_grid=None):

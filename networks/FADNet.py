@@ -56,13 +56,11 @@ class FADNet(nn.Module):
         self.channelnorm = ChannelNorm()
         self.resample1 = Resample2d()
         self.attention = attention
-        if self.attention:
-            self.SA = SA_Module(input_nc=11)
 
         # Second Block (DispNetRes), input is 11 channels(img0, img1, img1->img0, flow, diff-mag)
         in_planes = 3 * 3 + 1 + 1
         self.dispnetres = DispNetRes(in_planes, self.batchNorm, lastRelu=self.lastRelu, maxdisp=self.maxdisp,
-                                     input_channel=input_channel)
+                                     input_channel=input_channel,attention=attention)
 
         self.relu = nn.ReLU(inplace=False)
 
@@ -92,22 +90,18 @@ class FADNet(nn.Module):
         dispnetc_final_flow = dispnetc_flows[0]
 
         # warp img1 to img0; magnitude of diff between img0 and warped_img1,
-        # dummy_flow = torch.autograd.Variable(torch.zeros(dispnetc_final_flow.data.shape).cuda())
-        # dispnetc_final_flow_2d = torch.cat((dispnetc_final_flow, dummy_flow), dim = 1)
-        # resampled_img1 = self.resample1(inputs[:, self.input_channel:, :, :], -dispnetc_final_flow_2d)
+
         resampled_img1 = warp_right_to_left(inputs[:, self.input_channel:, :, :], -dispnetc_final_flow)
+
         diff_img0 = inputs[:, :self.input_channel, :, :] - resampled_img1
-        # norm_diff_img0 = self.channelnorm(diff_img0)
+
         norm_diff_img0 = channel_length(diff_img0)
 
         # concat img0, img1, img1->img0, flow, diff-img
+        # lowest scale
         inputs_net2 = torch.cat((inputs, resampled_img1, dispnetc_final_flow, norm_diff_img0), dim=1)
-        if self.attention:
-            attention_map = self.SA(inputs_net2)
 
-            dispnetres_flows = self.dispnetres([inputs_net2 * attention_map, dispnetc_flows])
-        else:
-            dispnetres_flows = self.dispnetres([inputs_net2, dispnetc_flows])
+        dispnetres_flows = self.dispnetres([inputs_net2, dispnetc_flows])
         # dispnetres
 
         index = 0
