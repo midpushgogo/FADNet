@@ -101,7 +101,7 @@ class FADNet(nn.Module):
         # lowest scale
         inputs_net2 = torch.cat((inputs, resampled_img1, dispnetc_final_flow, norm_diff_img0), dim=1)
 
-        dispnetres_flows = self.dispnetres([inputs_net2, dispnetc_flows])
+        dispnetres_flows = self.dispnetres([inputs_net2, dispnetc_flows],img_left,img_right)
         # dispnetres
 
         index = 0

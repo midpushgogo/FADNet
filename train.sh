@@ -3,10 +3,10 @@
 
 net=fadnet
 loss=loss_configs/fadnet_sceneflow.json
-outf_model=models/${net}-sceneflow
-logf=logs/${net}-sceneflow.log
+outf_model=models/${net}-sf-newatt
+logf=logs/${net}-sf-newatt.log
 
-lr=4e-3
+lr=1e-3
 devices=0,1
 dataset=sceneflow
 datapath=data
@@ -27,3 +27,4 @@ python -W ignore main.py --cuda --net $net --loss $loss --lr $lr \
                --model $model \
                --maxdisp $maxdisp \
 	       --manualSeed 1024 \
+	       --attention

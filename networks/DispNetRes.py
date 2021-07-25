@@ -24,13 +24,13 @@ class DispNetRes(nn.Module):
         self.res_scale = 7  # number of residuals
         self.attention=attention
         if self.attention:
-            self.SA0 = SA_Module(input_nc=11)
-            self.SA1 = SA_Module(input_nc=11)
-            self.SA2 = SA_Module(input_nc=11)
-            self.SA3 = SA_Module(input_nc=11)
-            self.SA4 = SA_Module(input_nc=11)
-            self.SA5 = SA_Module(input_nc=11)
-            self.SA6 = SA_Module(input_nc=11)
+            self.SA0 = SA_Module(input_nc=10)
+            self.SA1 = SA_Module(input_nc=10)
+            self.SA2 = SA_Module(input_nc=10)
+            self.SA3 = SA_Module(input_nc=10)
+            self.SA4 = SA_Module(input_nc=10)
+            self.SA5 = SA_Module(input_nc=10)
+            self.SA6 = SA_Module(input_nc=10)
 
 
         # improved with shrink res-block layers
@@ -132,7 +132,7 @@ class DispNetRes(nn.Module):
             r_right = warp_right_to_left(right_small, -base_flow[6])
 
             error = left_small - r_right
-            attention_map=self.SA6(left_small,right_small,error,base_flow[6])
+            attention_map=self.SA6(torch.cat([left_small,right_small,error,base_flow[6]],dim=1))
 
 
             pr6_res = self.pred_res6(conv6b*attention_map)
@@ -152,7 +152,7 @@ class DispNetRes(nn.Module):
             r_right = warp_right_to_left(right_small, -base_flow[5])
 
             error = left_small - r_right
-            attention_map=self.SA5(left_small,right_small,error,base_flow[5])
+            attention_map=self.SA5(torch.cat([left_small,right_small,error,base_flow[5]],dim=1))
 
 
             pr5_res = self.pred_res5(iconv5*attention_map)
@@ -174,7 +174,7 @@ class DispNetRes(nn.Module):
             r_right = warp_right_to_left(right_small, -base_flow[4])
 
             error = left_small - r_right
-            attention_map=self.SA4(left_small,right_small,error,base_flow[4])
+            attention_map=self.SA4(torch.cat([left_small,right_small,error,base_flow[4]],dim=1))
 
 
             pr4_res = self.pred_res4(iconv4*attention_map)
@@ -195,7 +195,7 @@ class DispNetRes(nn.Module):
             r_right = warp_right_to_left(right_small, -base_flow[3])
 
             error = left_small - r_right
-            attention_map=self.SA3(left_small,right_small,error,base_flow[3])
+            attention_map=self.SA3(torch.cat([left_small,right_small,error,base_flow[3]],dim=1))
 
 
             pr3_res = self.pred_res3(iconv3*attention_map)
@@ -215,7 +215,7 @@ class DispNetRes(nn.Module):
             r_right = warp_right_to_left(right_small, -base_flow[2])
 
             error = left_small - r_right
-            attention_map=self.SA2(left_small,right_small,error,base_flow[2])
+            attention_map=self.SA2(torch.cat([left_small,right_small,error,base_flow[2]],dim=1))
 
 
             pr2_res = self.pred_res2(iconv2*attention_map)
@@ -235,7 +235,7 @@ class DispNetRes(nn.Module):
             r_right = warp_right_to_left(right_small, -base_flow[1])
 
             error = left_small - r_right
-            attention_map=self.SA1(left_small,right_small,error,base_flow[1])
+            attention_map=self.SA1(torch.cat([left_small,right_small,error,base_flow[1]],dim=1))
 
 
             pr1_res = self.pred_res1(iconv1*attention_map)
@@ -257,7 +257,7 @@ class DispNetRes(nn.Module):
                 r_right = warp_right_to_left(right_small, -base_flow[0])
 
                 error = left_small - r_right
-                attention_map = self.SA0(left_small, right_small, error, base_flow[0])
+                attention_map = self.SA0(torch.cat([left_small, right_small, error, base_flow[0]],dim=1))
 
                 pr0_res = self.pred_res0(iconv0 * attention_map)
             else:
