@@ -3,10 +3,10 @@
 
 net=fadnet
 loss=loss_configs/fadnet_sceneflow.json
-outf_model=models/${net}-sf-newatt
-logf=logs/${net}-sf-newatt.log
+outf_model=models/${net}-sf-comb
+logf=logs/${net}-sf-comb.log
 
-lr=1e-3
+lr=1e-4
 devices=0,1
 dataset=sceneflow
 datapath=data
@@ -14,7 +14,7 @@ trainlist=lists/SceneFlow.list
 vallist=lists/FlyingThings3D_release_TEST.list
 startR=0
 startE=0
-batchSize=4
+batchSize=12
 maxdisp=-1
 model=None 
 
@@ -27,4 +27,5 @@ python -W ignore main.py --cuda --net $net --loss $loss --lr $lr \
                --model $model \
                --maxdisp $maxdisp \
 	       --manualSeed 1024 \
-	       --attention
+	       --attention \
+	       --combine

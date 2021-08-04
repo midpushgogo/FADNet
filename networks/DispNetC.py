@@ -22,7 +22,7 @@ class DispNetC(nn.Module):
         self.combine=combine
         if self.combine:
             self.conv3d = nn.Sequential(
-                nn.Conv3d(256, 32, 3, 1, 1),
+                nn.Conv3d(512, 32, 3, 1, 1),
                 nn.ReLU(True),
                 nn.Conv3d(32, 32, 3, 1, 1),
                 nn.ReLU(True),
