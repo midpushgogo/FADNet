@@ -27,5 +27,4 @@ python -W ignore main.py --cuda --net $net --loss $loss --lr $lr \
                --model $model \
                --maxdisp $maxdisp \
 	       --manualSeed 1024 \
-	       --attention \
 	       --combine
