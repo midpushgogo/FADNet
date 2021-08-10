@@ -118,6 +118,7 @@ def scale_transform(input_size=None,
     normalize = __imagenet_stats
 
     scale_list = [
+        transforms.ToPILImage(),
         transforms.Resize(scale_size),
         transforms.ToTensor(),
         transforms.Normalize(**normalize),

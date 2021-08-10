@@ -15,7 +15,7 @@ from utils.common import logger
 from losses.multiscaleloss import EPE
 from utils.preprocess import scale_disp
 import skimage
-
+from torchvision import utils as vutils
 from tensorboardX import SummaryWriter
 
 class DisparityTrainer(object):
@@ -131,6 +131,9 @@ class DisparityTrainer(object):
 
             left_input = torch.autograd.Variable(sample_batched['img_left'].cuda(), requires_grad=False)
             right_input = torch.autograd.Variable(sample_batched['img_right'].cuda(), requires_grad=False)
+         #   vutils.save_image(left_input[0],"showtrain/"+str(i_batch)+"left.jpg")
+         #   vutils.save_image(right_input[0],"showtrain/"+str(i_batch)+"right.jpg")
+
             input = torch.cat((left_input, right_input), 1)
 
             target_disp = sample_batched['gt_disp']
@@ -144,6 +147,8 @@ class DisparityTrainer(object):
 
             if self.net_name in ["fadnet", "mobilefadnet"]:
                 output_net1, output_net2 = self.net(input_var)
+          #      vutils.save_image(output_net2[0],'showtrain/'+str(i_batch)+'pre.jpg')
+
                 loss_net1 = self.criterion(output_net1, target_disp)
                 loss_net2 = self.criterion(output_net2, target_disp)
                 loss = loss_net1 + loss_net2
@@ -222,19 +227,23 @@ class DisparityTrainer(object):
 
             left_input = torch.autograd.Variable(sample_batched['img_left'].cuda(), requires_grad=False)
             right_input = torch.autograd.Variable(sample_batched['img_right'].cuda(), requires_grad=False)
-
+     #       vutils.save_image(left_input[0],"show/"+str(i)+"left.jpg")
+     #       vutils.save_image(right_input[0],"show/"+str(i)+"right.jpg")
+  #          print(left_input.shape) 
+       
             input = torch.cat((left_input, right_input), 1)
             input_var = torch.autograd.Variable(input, requires_grad=False)
 
             target_disp = sample_batched['gt_disp']
             target_disp = target_disp.cuda()
             target_disp = torch.autograd.Variable(target_disp, requires_grad=False)
-
+       #     print(target_disp.shape)
             if self.net_name in ['fadnet', 'mobilefadnet']:
                 output_net1, output_net2 = self.net(input_var)
+            #    vutils.save_image(output_net2[0],'show/'+str(i)+'pre.jpg',normalize=True)
                 output_net1 = scale_disp(output_net1, (output_net1.size()[0], 540, 960))
                 output_net2 = scale_disp(output_net2, (output_net2.size()[0], 540, 960))
-
+              #  vutils.save_image(output_net2[0],'show/'+str(i)+'af.jpg',normalize=True)
                 loss_net1 = self.epe(output_net1, target_disp)
                 loss_net2 = self.epe(output_net2, target_disp)
                 loss = loss_net1 + loss_net2

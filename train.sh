@@ -16,8 +16,8 @@ startR=0
 startE=0
 batchSize=12
 maxdisp=-1
-model=None 
-
+#model=models/fadnet-sf-comb/fadnet_0_6_26031.255.pth
+model=models/fadnet-sf-comb/fadnet_0_5_19495.388.pth
 python -W ignore main.py --cuda --net $net --loss $loss --lr $lr \
                --outf $outf_model --logFile $logf \
                --devices $devices --batch_size $batchSize \

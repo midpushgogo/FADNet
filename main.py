@@ -100,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--augment', type=int, help='if augment data in training', default=0)
     parser.add_argument('--attention', action='store_true')
     parser.add_argument('--combine', action='store_true')
-
+    parser.add_argument('--show',action="store_true")
     opt = parser.parse_args()
     try:
         os.makedirs(opt.outf)
