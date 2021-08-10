@@ -21,8 +21,9 @@ class DispNetC(nn.Module):
         self.relu = nn.ReLU(inplace=False)
         self.combine=combine
         if self.combine:
+            self.compress = ResBlock(256, 32)
             self.conv3d = nn.Sequential(
-                nn.Conv3d(512, 32, 3, 1, 1),
+                nn.Conv3d(64, 32, 3, 1, 1),
                 nn.ReLU(True),
                 nn.Conv3d(32, 32, 3, 1, 1),
                 nn.ReLU(True),
@@ -46,7 +47,7 @@ class DispNetC(nn.Module):
         self.corr_activation = nn.LeakyReLU(0.1, inplace=True)
 
         if resBlock:
-            self.conv3_1 = ResBlock(72, 256)
+            self.conv3_1 = ResBlock(72, 256) if not self.combine else ResBlock(112, 256)
             self.conv4   = ResBlock(256, 512, stride=2)
             self.conv4_1 = ResBlock(512, 512)
             self.conv5   = ResBlock(512, 512, stride=2)
@@ -54,7 +55,7 @@ class DispNetC(nn.Module):
             self.conv6   = ResBlock(512, 1024, stride=2)
             self.conv6_1 = ResBlock(1024, 1024)
         else:
-            self.conv3_1 = conv(72, 256)
+            self.conv3_1 = conv(72, 256) if not self.combine else conv(112, 256)
             self.conv4   = conv(256, 512, stride=2)
             self.conv4_1 = conv(512, 512)
             self.conv5   = conv(512, 512, stride=2)
@@ -150,7 +151,9 @@ class DispNetC(nn.Module):
         #out_corr = self.corr(conv3a_l, conv3a_r)
 
         if self.combine:
-            out_corr = build_comb(conv3a_l, conv3a_r, max_disp=40, comb=self.conv3d)
+            compress_left_feature = self.compress(conv3a_l)
+            compress_right_feature = self.compress(conv3a_r)
+            out_corr = build_comb(conv3a_l, conv3a_r, compress_left_feature, compress_right_feature, max_disp=40, comb=self.conv3d)
         else:
             out_corr = build_corr(conv3a_l, conv3a_r, max_disp=40)
         out_corr = self.corr_activation(out_corr)

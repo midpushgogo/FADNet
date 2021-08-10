@@ -15,7 +15,7 @@ from utils.common import logger
 from losses.multiscaleloss import EPE
 from utils.preprocess import scale_disp
 import skimage
-from torchvision import utils as vutils
+#from torchvision import utils as vutils
 from tensorboardX import SummaryWriter
 
 class DisparityTrainer(object):
