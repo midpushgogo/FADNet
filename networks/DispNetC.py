@@ -11,7 +11,7 @@ from networks.submodules import *
 
 class DispNetC(nn.Module):
 
-    def __init__(self, batchNorm=False, lastRelu=True, resBlock=True, maxdisp=-1, input_channel=3, get_features = False,combine=False):
+    def __init__(self, batchNorm=False, lastRelu=True, resBlock=True, maxdisp=-1, input_channel=3, get_features = False,attention=False,combine=False):
         super(DispNetC, self).__init__()
         
         self.batchNorm = batchNorm
@@ -28,6 +28,15 @@ class DispNetC(nn.Module):
                 nn.Conv3d(32, 32, 3, 1, 1),
                 nn.ReLU(True),
                 nn.Conv3d(32, 1, kernel_size=3, stride=1, padding=1, bias=False))
+        self.attention=attention
+        if self.attention:
+            self.SA0 = SA_Module(input_nc=10)
+            self.SA1 = SA_Module(input_nc=10)
+            self.SA2 = SA_Module(input_nc=10)
+            self.SA3 = SA_Module(input_nc=10)
+            self.SA4 = SA_Module(input_nc=10)
+            self.SA5 = SA_Module(input_nc=10)
+            self.SA6 = SA_Module(input_nc=10)
 
         # shrink and extract features
         self.conv1   = conv(self.input_channel, 64, 7, 2)
@@ -174,31 +183,87 @@ class DispNetC(nn.Module):
         concat5 = torch.cat((upconv5, upflow6, conv5b), 1)
         iconv5 = self.iconv5(concat5)
 
-        pr5 = self.pred_flow5(iconv5)
+        if self.attention:
+            left_small=F.interpolate(img_left, size=(pr6.size()[-2],pr6.size()[-1]))
+            right_small = F.interpolate(img_right, size=(pr6.size()[-2], pr6.size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -pr6)
+
+            error = left_small - r_right
+            attention_map=self.SA6(torch.cat([left_small,right_small,error,pr6],dim=1))
+            pr5 = self.pred_flow5(iconv5*attention_map)
+            pr5=pr6+pr5
+        else:
+            pr5 = self.pred_flow5(iconv5)
+
         upconv4 = self.upconv4(iconv5)
         upflow5 = self.upflow5to4(pr5)
         concat4 = torch.cat((upconv4, upflow5, conv4b), 1)
         iconv4 = self.iconv4(concat4)
         
-        pr4 = self.pred_flow4(iconv4)
+        if self.attention:
+            left_small=F.interpolate(img_left, size=(pr5.size()[-2],pr5.size()[-1]))
+            right_small = F.interpolate(img_right, size=(pr5.size()[-2], pr5.size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -pr5)
+
+            error = left_small - r_right
+            attention_map=self.SA5(torch.cat([left_small,right_small,error,pr5],dim=1))
+            pr4 = self.pred_flow4(iconv4*attention_map)
+            pr4 = pr5 + pr4
+        else:
+            pr4 = self.pred_flow4(iconv4)
         upconv3 = self.upconv3(iconv4)
         upflow4 = self.upflow4to3(pr4)
         concat3 = torch.cat((upconv3, upflow4, conv3b), 1)
         iconv3 = self.iconv3(concat3)
 
-        pr3 = self.pred_flow3(iconv3)
+        if self.attention:
+            left_small=F.interpolate(img_left, size=(pr4.size()[-2],pr4.size()[-1]))
+            right_small = F.interpolate(img_right, size=(pr4.size()[-2], pr4.size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -pr4)
+
+            error = left_small - r_right
+            attention_map=self.SA4(torch.cat([left_small,right_small,error,pr4],dim=1))
+            pr3 = self.pred_flow3(iconv3*attention_map)
+            pr3 = pr4 + pr3
+        else:
+            pr3 = self.pred_flow3(iconv3)
         upconv2 = self.upconv2(iconv3)
         upflow3 = self.upflow3to2(pr3)
         concat2 = torch.cat((upconv2, upflow3, conv2_l), 1)
         iconv2 = self.iconv2(concat2)
 
-        pr2 = self.pred_flow2(iconv2)
+        if self.attention:
+            left_small=F.interpolate(img_left, size=(pr3.size()[-2],pr3.size()[-1]))
+            right_small = F.interpolate(img_right, size=(pr3.size()[-2], pr3.size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -pr3)
+
+            error = left_small - r_right
+            attention_map=self.SA3(torch.cat([left_small,right_small,error,pr3],dim=1))
+            pr2 = self.pred_flow2(iconv2*attention_map)
+            pr2 = pr3 + pr2
+        else:
+            pr2 = self.pred_flow2(iconv2)
         upconv1 = self.upconv1(iconv2)
         upflow2 = self.upflow2to1(pr2)
         concat1 = torch.cat((upconv1, upflow2, conv1_l), 1)
         iconv1 = self.iconv1(concat1)
 
-        pr1 = self.pred_flow1(iconv1)
+        if self.attention:
+            left_small=F.interpolate(img_left, size=(pr2.size()[-2],pr2.size()[-1]))
+            right_small = F.interpolate(img_right, size=(pr2.size()[-2], pr2.size()[-1]))
+
+            r_right = warp_right_to_left(right_small, -pr2)
+
+            error = left_small - r_right
+            attention_map=self.SA2(torch.cat([left_small,right_small,error,pr2],dim=1))
+            pr1 = self.pred_flow1(iconv1*attention_map)
+            pr1 = pr2 + pr1
+        else:
+            pr1 = self.pred_flow1(iconv1)
         upconv0 = self.upconv0(iconv1)
         upflow1 = self.upflow1to0(pr1)
         concat0 = torch.cat((upconv0, upflow1, img_left), 1)
@@ -206,10 +271,32 @@ class DispNetC(nn.Module):
 
         # predict flow
         if self.maxdisp == -1:
-            pr0 = self.pred_flow0(iconv0)
+            if self.attention:
+                left_small = F.interpolate(img_left, size=(pr1.size()[-2], pr1.size()[-1]))
+                right_small = F.interpolate(img_right, size=(pr1.size()[-2], pr1.size()[-1]))
+
+                r_right = warp_right_to_left(right_small, -pr1)
+
+                error = left_small - r_right
+                attention_map = self.SA1(torch.cat([left_small, right_small, error, pr1], dim=1))
+                pr0 = self.pred_flow0(iconv0 * attention_map)
+                pr0 = pr1 + pr0
+            else:
+                pr0 = self.pred_flow0(iconv0)
             pr0 = self.relu(pr0)
         else:
-            pr0 = self.disp_expand(iconv0)
+            if self.attention:
+                left_small = F.interpolate(img_left, size=(pr1.size()[-2], pr1.size()[-1]))
+                right_small = F.interpolate(img_right, size=(pr1.size()[-2], pr1.size()[-1]))
+
+                r_right = warp_right_to_left(right_small, -pr1)
+
+                error = left_small - r_right
+                attention_map = self.SA1(torch.cat([left_small, right_small, error, pr1], dim=1))
+                pr0 = self.disp_expand(iconv0* attention_map)
+                pr0 = pr1 + pr0
+            else:
+                pr0 = self.disp_expand(iconv0)
             pr0 = F.softmax(pr0, dim=1)
             pr0 = disparity_regression(pr0, self.maxdisp)
 
@@ -250,3 +337,25 @@ class DispNetC(nn.Module):
         return [param for name, param in self.named_parameters() if 'bias' in name]
 
 
+class SA_Module(nn.Module):
+    """
+    Note: simple but effective spatial attention module.
+    """
+
+    def __init__(self, input_nc, output_nc=1, ndf=16):
+        super(SA_Module, self).__init__()
+        self.attention_value = nn.Sequential(
+            nn.Conv2d(input_nc, ndf, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(ndf),
+            nn.ReLU(True),
+            nn.Conv2d(ndf, ndf, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(ndf),
+            nn.ReLU(True),
+            nn.Conv2d(ndf, output_nc, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        attention_value = self.attention_value(x)
+
+        return attention_value
