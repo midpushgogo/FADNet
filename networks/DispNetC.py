@@ -187,11 +187,11 @@ class DispNetC(nn.Module):
             left_small=F.interpolate(img_left, size=(pr6.size()[-2]*2,pr6.size()[-1]*2))
             right_small = F.interpolate(img_right, size=(pr6.size()[-2]*2, pr6.size()[-1]*2))
             pr6_=F.interpolate(pr6,scale_factor=2)
-            pr6_=pr6_/(img_left.size()[2]/left_small.size()[2])
-            r_right = warp_right_to_left(right_small, -pr6_)
+            pr6_a=pr6_/(img_left.size()[2]/left_small.size()[2])
+            r_right = warp_right_to_left(right_small, -pr6_a)
 
             error = left_small - r_right
-            attention_map=self.SA6(torch.cat([left_small,right_small,error,pr6_],dim=1))
+            attention_map=self.SA6(torch.cat([left_small,right_small,error,pr6_a],dim=1))
             pr5 = self.pred_flow5(iconv5*attention_map)
             pr5=pr6_+pr5
         else:
@@ -206,11 +206,11 @@ class DispNetC(nn.Module):
             left_small=F.interpolate(img_left, size=(pr5.size()[-2]*2,pr5.size()[-1]*2))
             right_small = F.interpolate(img_right, size=(pr5.size()[-2]*2, pr5.size()[-1]*2))
             pr5_=F.interpolate(pr5,scale_factor=2)
-            pr5_=pr5_/(img_left.size()[2]/left_small.size()[2])
-            r_right = warp_right_to_left(right_small, -pr5_)
+            pr5_a=pr5_/(img_left.size()[2]/left_small.size()[2])
+            r_right = warp_right_to_left(right_small, -pr5_a)
 
             error = left_small - r_right
-            attention_map=self.SA5(torch.cat([left_small,right_small,error,pr5_],dim=1))
+            attention_map=self.SA5(torch.cat([left_small,right_small,error,pr5_a],dim=1))
             pr4 = self.pred_flow4(iconv4*attention_map)
             pr4 = pr5_ + pr4
         else:
@@ -224,11 +224,11 @@ class DispNetC(nn.Module):
             left_small=F.interpolate(img_left, size=(pr4.size()[-2]*2,pr4.size()[-1]*2))
             right_small = F.interpolate(img_right, size=(pr4.size()[-2]*2, pr4.size()[-1]*2))
             pr4_=F.interpolate(pr4,scale_factor=2)
-            pr4_=pr4_/(img_left.size()[2]/left_small.size()[2])
-            r_right = warp_right_to_left(right_small, -pr4_)
+            pr4_a=pr4_/(img_left.size()[2]/left_small.size()[2])
+            r_right = warp_right_to_left(right_small, -pr4_a)
 
             error = left_small - r_right
-            attention_map=self.SA4(torch.cat([left_small,right_small,error,pr4_],dim=1))
+            attention_map=self.SA4(torch.cat([left_small,right_small,error,pr4_a],dim=1))
             pr3 = self.pred_flow3(iconv3*attention_map)
             pr3 = pr4_ + pr3
         else:
@@ -242,11 +242,11 @@ class DispNetC(nn.Module):
             left_small=F.interpolate(img_left, size=(pr3.size()[-2]*2,pr3.size()[-1]*2))
             right_small = F.interpolate(img_right, size=(pr3.size()[-2]*2, pr3.size()[-1]*2))
             pr3_=F.interpolate(pr3,scale_factor=2)
-            pr3_=pr3_/(img_left.size()[2]/left_small.size()[2])
-            r_right = warp_right_to_left(right_small, -pr3_)
+            pr3_a=pr3_/(img_left.size()[2]/left_small.size()[2])
+            r_right = warp_right_to_left(right_small, -pr3_a)
 
             error = left_small - r_right
-            attention_map=self.SA3(torch.cat([left_small,right_small,error,pr3_],dim=1))
+            attention_map=self.SA3(torch.cat([left_small,right_small,error,pr3_a],dim=1))
             pr2 = self.pred_flow2(iconv2*attention_map)
             pr2 = pr3_ + pr2
         else:
@@ -260,11 +260,11 @@ class DispNetC(nn.Module):
             left_small=F.interpolate(img_left, size=(pr2.size()[-2]*2,pr2.size()[-1]*2))
             right_small = F.interpolate(img_right, size=(pr2.size()[-2]*2, pr2.size()[-1]*2))
             pr2_=F.interpolate(pr2,scale_factor=2)
-            pr2_=pr2_/(img_left.size()[2]/left_small.size()[2])
-            r_right = warp_right_to_left(right_small, -pr2_)
+            pr2_a=pr2_/(img_left.size()[2]/left_small.size()[2])
+            r_right = warp_right_to_left(right_small, -pr2_a)
 
             error = left_small - r_right
-            attention_map=self.SA2(torch.cat([left_small,right_small,error,pr2_],dim=1))
+            attention_map=self.SA2(torch.cat([left_small,right_small,error,pr2_a],dim=1))
             pr1 = self.pred_flow1(iconv1*attention_map)
             pr1 = pr2_ + pr1
         else:
@@ -280,11 +280,11 @@ class DispNetC(nn.Module):
                 left_small = F.interpolate(img_left, size=(pr1.size()[-2]*2, pr1.size()[-1]*2))
                 right_small = F.interpolate(img_right, size=(pr1.size()[-2]*2, pr1.size()[-1]*2))
                 pr1_ = F.interpolate(pr1, scale_factor=2)
-                pr1_ = pr1_ / (img_left.size()[2] / left_small.size()[2])
-                r_right = warp_right_to_left(right_small, -pr1_)
+                pr1_a = pr1_ / (img_left.size()[2] / left_small.size()[2])
+                r_right = warp_right_to_left(right_small, -pr1_a)
 
                 error = left_small - r_right
-                attention_map = self.SA1(torch.cat([left_small, right_small, error, pr1_], dim=1))
+                attention_map = self.SA1(torch.cat([left_small, right_small, error, pr1_a], dim=1))
                 pr0 = self.pred_flow0(iconv0 * attention_map)
                 pr0 = pr1_ + pr0
             else:
@@ -295,11 +295,11 @@ class DispNetC(nn.Module):
                 left_small = F.interpolate(img_left, size=(pr1.size()[-2]*2, pr1.size()[-1]*2))
                 right_small = F.interpolate(img_right, size=(pr1.size()[-2]*2, pr1.size()[-1]*2))
                 pr1_ = F.interpolate(pr1, scale_factor=2)
-                pr1_ = pr1_ / (img_left.size()[2] / left_small.size()[2])
-                r_right = warp_right_to_left(right_small, -pr1_)
+                pr1_a = pr1_ / (img_left.size()[2] / left_small.size()[2])
+                r_right = warp_right_to_left(right_small, -pr1_a)
 
                 error = left_small - r_right
-                attention_map = self.SA1(torch.cat([left_small, right_small, error, pr1_], dim=1))
+                attention_map = self.SA1(torch.cat([left_small, right_small, error, pr1_a], dim=1))
                 pr0 = self.disp_expand(iconv0* attention_map)
                 pr0 = pr1_ + pr0
             else:
