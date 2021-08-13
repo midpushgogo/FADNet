@@ -128,11 +128,11 @@ class DispNetRes(nn.Module):
         if self.attention:
             left_small=F.interpolate(left, size=(base_flow[6].size()[-2],base_flow[6].size()[-1]))
             right_small = F.interpolate(right, size=(base_flow[6].size()[-2], base_flow[6].size()[-1]))
-
-            r_right = warp_right_to_left(right_small, -base_flow[6])
+            base_m=base_flow[6]/(left.size()[2]/left_small.size()[2])
+            r_right = warp_right_to_left(right_small, -base_m)
 
             error = left_small - r_right
-            attention_map=self.SA6(torch.cat([left_small,right_small,error,base_flow[6]],dim=1))
+            attention_map=self.SA6(torch.cat([left_small,right_small,error,base_m],dim=1))
 
 
             pr6_res = self.pred_res6(conv6b*attention_map)
@@ -148,11 +148,12 @@ class DispNetRes(nn.Module):
         if self.attention:
             left_small=F.interpolate(left, size=(base_flow[5].size()[-2],base_flow[5].size()[-1]))
             right_small = F.interpolate(right, size=(base_flow[5].size()[-2], base_flow[5].size()[-1]))
+            base_m=base_flow[5]/(left.size()[2]/left_small.size()[2])
 
-            r_right = warp_right_to_left(right_small, -base_flow[5])
+            r_right = warp_right_to_left(right_small, -base_m)
 
             error = left_small - r_right
-            attention_map=self.SA5(torch.cat([left_small,right_small,error,base_flow[5]],dim=1))
+            attention_map=self.SA5(torch.cat([left_small,right_small,error,base_m],dim=1))
 
 
             pr5_res = self.pred_res5(iconv5*attention_map)
@@ -170,11 +171,12 @@ class DispNetRes(nn.Module):
         if self.attention:
             left_small=F.interpolate(left, size=(base_flow[4].size()[-2],base_flow[4].size()[-1]))
             right_small = F.interpolate(right, size=(base_flow[4].size()[-2], base_flow[4].size()[-1]))
+            base_m=base_flow[4]/(left.size()[2]/left_small.size()[2])
 
-            r_right = warp_right_to_left(right_small, -base_flow[4])
+            r_right = warp_right_to_left(right_small, -base_m)
 
             error = left_small - r_right
-            attention_map=self.SA4(torch.cat([left_small,right_small,error,base_flow[4]],dim=1))
+            attention_map=self.SA4(torch.cat([left_small,right_small,error,base_m],dim=1))
 
 
             pr4_res = self.pred_res4(iconv4*attention_map)
@@ -191,11 +193,12 @@ class DispNetRes(nn.Module):
         if self.attention:
             left_small=F.interpolate(left, size=(base_flow[3].size()[-2],base_flow[3].size()[-1]))
             right_small = F.interpolate(right, size=(base_flow[3].size()[-2], base_flow[3].size()[-1]))
+            base_m=base_flow[3]/(left.size()[2]/left_small.size()[2])
 
-            r_right = warp_right_to_left(right_small, -base_flow[3])
+            r_right = warp_right_to_left(right_small, -base_m)
 
             error = left_small - r_right
-            attention_map=self.SA3(torch.cat([left_small,right_small,error,base_flow[3]],dim=1))
+            attention_map=self.SA3(torch.cat([left_small,right_small,error,base_m],dim=1))
 
 
             pr3_res = self.pred_res3(iconv3*attention_map)
@@ -211,11 +214,12 @@ class DispNetRes(nn.Module):
         if self.attention:
             left_small=F.interpolate(left, size=(base_flow[2].size()[-2],base_flow[2].size()[-1]))
             right_small = F.interpolate(right, size=(base_flow[2].size()[-2], base_flow[2].size()[-1]))
+            base_m=base_flow[2]/(left.size()[2]/left_small.size()[2])
 
-            r_right = warp_right_to_left(right_small, -base_flow[2])
+            r_right = warp_right_to_left(right_small, -base_m)
 
             error = left_small - r_right
-            attention_map=self.SA2(torch.cat([left_small,right_small,error,base_flow[2]],dim=1))
+            attention_map=self.SA2(torch.cat([left_small,right_small,error,base_m],dim=1))
 
 
             pr2_res = self.pred_res2(iconv2*attention_map)
@@ -231,11 +235,12 @@ class DispNetRes(nn.Module):
         if self.attention:
             left_small=F.interpolate(left, size=(base_flow[1].size()[-2],base_flow[1].size()[-1]))
             right_small = F.interpolate(right, size=(base_flow[1].size()[-2], base_flow[1].size()[-1]))
+            base_m=base_flow[1]/(left.size()[2]/left_small.size()[2])
 
-            r_right = warp_right_to_left(right_small, -base_flow[1])
+            r_right = warp_right_to_left(right_small, -base_m)
 
             error = left_small - r_right
-            attention_map=self.SA1(torch.cat([left_small,right_small,error,base_flow[1]],dim=1))
+            attention_map=self.SA1(torch.cat([left_small,right_small,error,base_m],dim=1))
 
 
             pr1_res = self.pred_res1(iconv1*attention_map)
@@ -253,11 +258,12 @@ class DispNetRes(nn.Module):
             if self.attention:
                 left_small = F.interpolate(left, size=(base_flow[0].size()[-2], base_flow[0].size()[-1]))
                 right_small = F.interpolate(right, size=(base_flow[0].size()[-2], base_flow[0].size()[-1]))
+                base_m = base_flow[0] / (left.size()[2] / left_small.size()[2])
 
-                r_right = warp_right_to_left(right_small, -base_flow[0])
+                r_right = warp_right_to_left(right_small, -base_m)
 
                 error = left_small - r_right
-                attention_map = self.SA0(torch.cat([left_small, right_small, error, base_flow[0]],dim=1))
+                attention_map = self.SA0(torch.cat([left_small, right_small, error, base_m],dim=1))
 
                 pr0_res = self.pred_res0(iconv0 * attention_map)
             else:
